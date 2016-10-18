@@ -152,6 +152,7 @@ while true; do
 	get_internal_ip
 	get_hostname
 	get_disk_info
+	get_disk_temperature
 	get_full_date
 	get_net_tx_rx_realtime
 	get_memory_info
