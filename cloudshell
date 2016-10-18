@@ -18,10 +18,11 @@ export CONSOLE_FONT="Lat15-Fixed18"
 export OUTPUT_CONSOLE="1"
 
 # Network Interface: eth0, wlan0, ....
-export NETIF="eth0"
+export NETIF=`ifconfig | grep Ethernet | awk '{ print $1 }'`
 
 # SATA HDD mount
 export SATA="/dev/sda1"
+export SATA2="/dev/sdb1"
 
 # Screen refresh in seconds
 export REFRESH="3"
@@ -66,6 +67,19 @@ get_disk_info() {
 	export DISK_USED=`echo $t | awk '{printf $3}'`
 	export DISK_FREE=`echo $t | awk '{printf $4}'`
 	export DISK_USED_PCT=`echo $t | awk '{printf $5}'`
+
+	t=`df -h | grep $SATA2`
+	export DISK_SIZE2=`echo $t | awk '{printf $2}'`
+	export DISK_USED2=`echo $t | awk '{printf $3}'`
+	export DISK_FREE2=`echo $t | awk '{printf $4}'`
+	export DISK_USED_PCT2=`echo $t | awk '{printf $5}'`
+}
+
+get_disk_temperature() {
+	t=`smartctl -a $SATA -d sat | grep Temp`
+	export DISK_TEMP=`echo $t | awk '{printf $10}'`
+	t=`smartctl -a $SATA2 -d sat | grep Temp`
+	export DISK_TEMP2=`echo $t | awk '{printf $10}'`
 }
 
 get_memory_info() {
@@ -152,9 +166,7 @@ while true; do
 	clear > $oc
 
 	# format the data on screen
-	echo "" > $oc
-	echo -e "$CBLUE $HOSTNAME $COFF: $DATE" > $oc
-    echo "" > $oc
+	echo -e "$CBLUE$HOSTNAME $COFF: $DATE" > $oc
 	# line CPU Usage
 	echo -e "CPU Usage: $CBLUE$CPU_USAGE%$COFF   CPU Temp: $CBLUE$CPU_TEMP$COFF" > $oc
     # Line Memory
@@ -164,7 +176,10 @@ while true; do
 	# Line network usage
 	echo -e "TX: $CBLUE$NET_TX MB/s$COFF RX: $CBLUE$NET_RX MB/s$COFF" > $oc
 	# Line Disk Space
+	echo -e "$SATA  HDD Temp: $CBLUE$DISK_TEMP$COFF" > $oc
 	echo -e "Disk Used: $CBLUE$DISK_USED$COFF ($CBLUE$DISK_USED_PCT$COFF)  Free: $CBLUE$DISK_FREE$COFF" > $oc
+	echo -e "$SATA2  HDD Temp: $CBLUE$DISK_TEMP2$COFF" > $oc
+	echo -e "Disk Used: $CBLUE$DISK_USED2$COFF ($CBLUE$DISK_USED_PCT2$COFF)  Free: $CBLUE$DISK_FREE2$COFF" > $oc
     # Line Samba
     echo -e "Samba Clients: $CBLUE$SAMBA_CONNECTIONS$COFF" > $oc
     # line NFS
